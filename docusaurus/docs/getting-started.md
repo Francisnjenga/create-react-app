@@ -1,4 +1,77 @@
----
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [voterId, setVoterId] = useState('');
+  const [grade, setGrade] = useState('');
+  const [stream, setStream] = useState('');
+  const [candidates, setCandidates] = useState({});
+  const [votes, setVotes] = useState({});
+  const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL";
+
+  const fetchCandidates = async (position) => {
+    const response = await fetch(
+      `${API_URL}?position=${position}&grade=${grade}&stream=${stream}`
+    );
+    const data = await response.json();
+    setCandidates(prev => ({ ...prev, [position]: data }));
+  };
+
+  const submitVote = async () => {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ voterId, votes })
+    });
+    const result = await response.json();
+    alert(result.success ? "Vote Submitted!" : "Error Submitting Vote");
+  };
+
+  return (
+    <div className="App">
+      <h1>School Election 2024</h1>
+      
+      <div className="voter-info">
+        <input placeholder="Voter ID" onChange={(e) => setVoterId(e.target.value)} />
+        <select onChange={(e) => setGrade(e.target.value)}>
+          <option value="">Select Grade</option>
+          {['Grade 1', 'Grade 2', ..., 'Grade 9'].map(g => (
+            <option key={g} value={g}>{g}</option>
+          ))}
+        </select>
+        <select onChange={(e) => setStream(e.target.value)}>
+          <option value="">Select Stream</option>
+          {['Joy', 'Peace', 'Unity'].map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
+      {['President', 'Governor', 'MP', 'Woman Representative'].map(position => (
+        <div key={position} className="position">
+          <h2>{position}</h2>
+          <button onClick={() => fetchCandidates(position)}>
+            Load Candidates
+          </button>
+          <div className="candidates">
+            {candidates[position]?.map(name => (
+              <label key={name}>
+                <input type="radio" name={position} 
+                  onChange={() => setVotes({ ...votes, [position]: name })} />
+                {name}
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <button className="submit" onClick={submitVote}>
+        Submit Vote
+      </button>
+    </div>
+  );
+}
+
+export default App;---
 id: getting-started
 title: Getting Started
 ---
